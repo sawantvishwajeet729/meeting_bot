@@ -1,0 +1,8 @@
+resemblyzer
+librosa
+numpy
+sklearn
+whisper
+langchain_core
+langchain_groq
+streamlit
