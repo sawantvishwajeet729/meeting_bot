@@ -4,25 +4,33 @@
 MeetSync is your smart meeting assistant that transforms the way you manage and review meetings. With cutting-edge AI, MeetSync captures meeting transcripts, generates concise summaries, and highlights actionable points. Whether you’re collaborating remotely or in person, MeetSync ensures nothing important is missed, making follow-ups and decision-making effortless.
 
 
-## Deployment
+## Run Locally
 
-To deploy this project run
-
-```bash
-  git clone https://github.com/sawantvishwajeet729/meeting_bot.git
-```
-
-Change directory to meeting_bot
+Clone the project
 
 ```bash
-    cd meeting_bot
+  git clone https://github.com/sawantvishwajeet729/meeting_bot.gitt
 ```
 
-Run the Streamlit app
+Go to the project directory
 
 ```bash
-    streamlit run st_app.py
+  cd meeting_bot
 ```
+
+Install dependencies
+
+```bash
+  pip install -r requirements.txt
+```
+
+Start the streamlit app
+
+```bash
+  streamlit run st_app.py
+```
+
+
 ## Authors
 
 - [@VishwajeetSawant](https://github.com/sawantvishwajeet729)
