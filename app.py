@@ -12,8 +12,7 @@ import streamlit as st
 
 #declare variable
 #os.environ['gro_key']=st.secrets["openAIKey"]
-os.environ['gro_key']="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"
-#gro_key = "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"
+#gro_key = "xxx"
 num_speaker = 2
 
 # Load audio file and preprocess
