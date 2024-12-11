@@ -1,7 +1,7 @@
 resemblyzer
 librosa
 numpy
-sklearn
+scikit-learn
 whisper
 langchain_core
 langchain_groq
