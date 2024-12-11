@@ -11,38 +11,29 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 from langchain_core.output_parsers import StrOutputParser
 
-#declare variable
-#os.environ['gro_key']=st.secrets["openAIKey"]
-gro_key = "xxx"
-
-# Initialize encoder
+# Initialize encoder for Speech Diarization
 encoder = VoiceEncoder()
 
-#initialise whisper model
+# Segment and embed for speech segmentation
+segment_size = 1.5  # in seconds
+step_size = 0.75    # in seconds
+
+#initialise whisper model for speech to text
 model_whisper = whisper.load_model("base")
 
+#initialise the langchain chat prompt template
 system_1 = "you are a skilled editor specializing in enhancing meeting transcripts. Your task is to process raw meeting transcripts to make them clearer, concise, and professional while maintaining the original meaning. Specifically: Clarity: Simplify and rephrase sentences for better readability. Conciseness: Remove filler words, redundancies, and unnecessary phrases. Consistency: Use consistent terminology and tone throughout the transcript. Avoid altering the meaning of the original statements. If the context is unclear, flag such parts for clarification rather than making assumptions. Deliver polished text ready for professional use. Along with this, create a short summary at the end along with any action points from the meeting"
 human_1 = "{text}"
 prompt = ChatPromptTemplate.from_messages([("system", system_1), ("human", human_1)])
 
-model = ChatGroq(temperature=0, groq_api_key=gro_key, model_name="llama-3.1-70b-versatile", max_tokens=1024)
-
-output_parser=StrOutputParser()
-
-chain = prompt | model | output_parser
-
-# Segment and embed
-segment_size = 1.5  # in seconds
-step_size = 0.75    # in seconds
-
-#logo desgin
+#initialize the logo for webpage rendering
 logo = "images/logo.png"
 
 #---Streamlit code ---
 st.set_page_config(page_title="Meeting_Bot", page_icon=":desktop_computer:", layout="wide")
 
+#Sidebar Section
 with st.sidebar:
-    #---header section---
     with st.container():
         st.image(logo, width=250)
         st.title("Hi there :wave:")
@@ -50,28 +41,37 @@ with st.sidebar:
         st.write("MeetSync is your smart meeting assistant that transforms the way you manage and review meetings. With cutting-edge AI, MeetSync captures meeting transcripts, generates concise summaries, and highlights actionable points. Whether you’re collaborating remotely or in person, MeetSync ensures nothing important is missed, making follow-ups and decision-making effortless.")
         st.write("Stay organized, save time, and keep everyone on the same page with MeetSync—the ultimate tool for efficient and productive meetings.")
 
+#Main page section: Title
 with st.container():
     #st.image("logo_white.png", width=400)
     st.title("Welcome to :blue[_MeetSync_]")
 
+#Main page section: Body
 with st.container():
-    path_url, num_attendee = st.columns((1, 1))
+    path_url, num_attendee, groq_key = st.columns((1, 1, 1))
     with path_url:
+        #get the path to audio file
         audio_path = st.text_input('Enter the path to the meeting audio file')
     with num_attendee:
+        #get the number of speaker in the meeting
         num_speaker = st.number_input('Number of Speaker', min_value=1, max_value=10, value=2, step=1)
+    with groq_key:
+        #get the GroQ API key
+        gro_key = st.text_input('Enter your GroQ API key')
     
     if st.button("Submit"):
         with st.status("Processing", expanded=False) as status:
+            # Load audio file and preprocess
             wav, sr = librosa.load(audio_path, sr=16000)
             wav = preprocess_wav(wav)
 
+            #Segment the audio file and create embeddings
             segments = [wav[int(i * sr): int((i + segment_size) * sr)]
             for i in np.arange(0, len(wav) / sr - segment_size, step_size)]
 
             embeddings = np.array([encoder.embed_utterance(seg) for seg in segments])
 
-            # Perform spectral clustering
+            # Perform spectral clustering for speech diarization
             clustering = SpectralClustering(
                 n_clusters=num_speaker, affinity='nearest_neighbors', assign_labels='kmeans'
             ).fit(embeddings)
@@ -98,7 +98,7 @@ with st.container():
             # Save the last segment
             merged_segments.append((current_start, current_end, current_label))
 
-            #Create transcripts
+            #Create transcripts using Whisper model
             transcipts = []
             for start, end, speaker in merged_segments:
                 start_sample = int(start * sr)
@@ -111,10 +111,19 @@ with st.container():
             transcipts = '\n'.join(transcipts)
 
             st.write("Transcripts created...:white_check_mark:")
+            
+            # Initialize the llm model
+            model = ChatGroq(temperature=0, groq_api_key=gro_key, model_name="llama-3.3-70b-versatile", max_tokens=1024)
+
+            output_parser=StrOutputParser()
+
+            chain = prompt | model | output_parser
 
             response = chain.invoke({'text': transcipts})
+
             st.write("Creating Summary...:white_check_mark:")
             
         with st.container():
+            #print the final result
             st.write(response)
 
