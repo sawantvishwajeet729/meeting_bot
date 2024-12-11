@@ -36,8 +36,13 @@ Start the streamlit app
 The web app would interface woud look like below
 
 
+
 ![App Screenshot](https://github.com/sawantvishwajeet729/meeting_bot/blob/main/images/snapshot_1.png)
 
+
+Click the below link to check out the demo streamlit app. The link is not for working app, the working app can be run locally only.
+
+[Demo web app to get understand the user interface](https://meetsync.streamlit.app)
 
 Enter the path to Audio file of meeting recording. Make sure that the file is in .wav format.
 
